@@ -4,6 +4,9 @@ import { UserAvatarForm } from "@/app/_features/user/forms/AvatarForm";
 import { UserUpdateForm } from "@/app/_features/user/forms/UpdateForm";
 import { getDateTimeFullStyle } from "@/app/_lib/tempo/format";
 
+// セッションからユーザーを抽出する必要があるため
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
 
   const user = await getUserInstance();

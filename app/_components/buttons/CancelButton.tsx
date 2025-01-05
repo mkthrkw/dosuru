@@ -12,6 +12,7 @@ export function CancelButton({ size = "md", onClick, label = "キャンセル", 
 
   return (
     <button
+      type='button'
       onClick={onClick}
       className={clsx(
         "flex items-center font-bold text-base-content/40 group hover:text-base-content/80",

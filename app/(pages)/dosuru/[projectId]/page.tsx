@@ -4,7 +4,7 @@ import { ProjectHeader } from "@/app/_features/projects/components/ProjectHeader
 import { notFound } from "next/navigation";
 
 export default async function Page(
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
 
   const { projectId } = await params;

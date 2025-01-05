@@ -5,7 +5,7 @@ import { ProjectDeleteForm } from "@/app/_features/projects/forms/DeleteForm";
 import { notFound } from "next/navigation";
 
 export default async function Page(
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
 
   const { projectId } = await params;
