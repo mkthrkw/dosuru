@@ -22,6 +22,7 @@ export function CommentCreateForm({
       targetId: ticketId,
       onSuccess: () => setTicketModalData(ticketId),
       formReset: true,
+      mode: "onSubmit"
     }
   );
 

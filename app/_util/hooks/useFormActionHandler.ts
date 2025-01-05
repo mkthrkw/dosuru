@@ -13,6 +13,7 @@ export function useFormActionHandler<TFormValues extends Record<string, unknown>
   onSuccess = () => {},
   formReset = false,
   successToast = true,
+  mode = "onBlur",
 }: {
   schema: z.ZodSchema<TFormValues>; // Zodスキーマ
   handleAction:
@@ -22,6 +23,7 @@ export function useFormActionHandler<TFormValues extends Record<string, unknown>
   onSuccess?: () => void; // 成功時の処理
   formReset?: boolean;
   successToast?: boolean;
+  mode?: "onBlur" | "onChange" | "onSubmit" | "onTouched" | "all" | undefined;
 }) {
   const {
     register,
@@ -30,7 +32,7 @@ export function useFormActionHandler<TFormValues extends Record<string, unknown>
     reset, // フォームをリセットするため
     setValue,
   } = useForm<TFormValues>({
-    mode: "onBlur",
+    mode: mode,
     resolver: zodResolver(schema),
   });
 
