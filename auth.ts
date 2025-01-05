@@ -4,8 +4,14 @@ import Credentials from "next-auth/providers/credentials";
 import { authSchema } from "./app/_features/auth/schema";
 import bcrypt from "bcrypt";
 import { getUserByEmail } from "@/app/_features/user/actions";
+import { cache } from "react";
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+const {
+  auth: uncachedAuth,
+  handlers,
+  signIn,
+  signOut,
+} = NextAuth({
   ...authConfig,
   providers: [
     // Credentialsはbcryptがmiddlewareで使えないため、authConfigに含めることが出来ない
@@ -27,3 +33,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
 });
+
+const auth = cache(uncachedAuth);
+export { auth, handlers, signIn, signOut };
