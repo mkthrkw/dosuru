@@ -32,9 +32,8 @@ export function ListColumn({ projectListTicket }: { projectListTicket: ProjectLi
   const { ticketDialog, ticketModalProps, updateTicketModalProps, handleTicketModalOpen, setTicketNestedData } = useTicketModal();
 
   useEffect(() => {
-    if (lists === projectListTicket.lists) return;
     setLists(projectListTicket.lists);
-  }, [projectListTicket.lists, lists]);
+  }, [projectListTicket.lists]);
 
   const customSensors = useSensors(
     useSensor(MouseSensor, {

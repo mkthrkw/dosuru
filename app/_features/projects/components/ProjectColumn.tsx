@@ -14,7 +14,6 @@ export function ProjectColumn({ projects }: { projects: Project[] }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (projectsState === projects) return;
     setProjectsState(projects);
   }, [projects]);
 
