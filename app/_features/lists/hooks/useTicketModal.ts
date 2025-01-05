@@ -26,7 +26,7 @@ export const useTicketModal = () => {
       return {
         ...prev,
         ...props,
-        updated_at: new Date(),
+        updatedAt: new Date(),
       };
     });
   };

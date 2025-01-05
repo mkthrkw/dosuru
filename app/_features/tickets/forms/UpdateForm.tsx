@@ -1,16 +1,15 @@
 "use client";
 import { CommonModal } from '@/app/_components/modals/CommonModal';
 import React, { useEffect } from 'react'
-import { ticketSchema, TicketSchemaType } from '../schema';
 import { TicketDeleteForm } from './DeleteForm';
 import { CommentColumn } from '@/app/_features/comments/components/CommentColumn';
 import { EllipsisHorizontalCircleIcon } from '@heroicons/react/24/solid';
 import { getDateInputStyle, getDateTimeFullStyle } from '@/app/_lib/tempo/format';
 import { CompleteBadge } from '@/app/_features/tickets/components/CompleteBadge';
-import { useCompleteHandler } from '../../../_util/hooks/useCompleteHandler';
-import { usePartialUpdateHandler } from '../../../_util/hooks/usePartialUpdateHandler';
-import { updateTicket, updateTicketCompleted } from '../actions';
+import { useTicketCompleteHandler } from '../hooks/useTicketCompleteHandler';
+import { useTicketUpdateHandler } from '../hooks/useTicketUpdateHandler';
 import { TicketComment } from '@/app/_util/types/nestedType';
+import { OutputTicketUpdateSchemaType } from '../schema';
 
 export function TicketUpdateForm({
   modalProps,
@@ -18,23 +17,17 @@ export function TicketUpdateForm({
   dialog,
 }: {
   modalProps: TicketComment | null,
-  updateProps: (partialParams: Partial<TicketSchemaType>) => void,
+  updateProps: (partialParams: Partial<OutputTicketUpdateSchemaType>) => void,
   dialog: React.RefObject<HTMLDialogElement | null>
 }) {
 
-  const { completed, setCompleted, handleToggle } = useCompleteHandler({
-    handleAction: updateTicketCompleted,
-    fieldName: "completed",
-    targetId: modalProps?.id,
-    defaultState: modalProps?.completed,
+  const { completed, setCompleted, handleToggle } = useTicketCompleteHandler({
+    modalProps: modalProps,
     stateUpdateFunction: updateProps,
   });
 
-  const { register, handleSubmit, errors, setValue } = usePartialUpdateHandler<TicketSchemaType, TicketComment>({
-    schema: ticketSchema,
-    handleAction: updateTicket,
-    targetId: modalProps?.id ?? '',
-    oldValues: modalProps,
+  const { register, handleSubmit, errors, setValue } = useTicketUpdateHandler({
+    modalProps: modalProps,
     stateUpdateFunction: updateProps,
   });
 

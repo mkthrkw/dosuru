@@ -1,7 +1,10 @@
 "use server";
 
 import { prisma } from "@/prisma/prisma";
-import { TicketSchemaType } from "@/app/_features/tickets/schema";
+import {
+  OutputTicketUpdateSchemaType,
+  TicketCreateSchemaType,
+} from "@/app/_features/tickets/schema";
 import { ActionState } from "@/app/_util/types/actionType";
 import { TicketComment } from "@/app/_util/types/nestedType";
 
@@ -21,7 +24,7 @@ import { TicketComment } from "@/app/_util/types/nestedType";
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function createTicket(
-  inputValues: TicketSchemaType,
+  inputValues: TicketCreateSchemaType,
   listId: string,
 ): Promise<ActionState> {
   const prevState: ActionState = { state: "pending", message: "" };
@@ -115,13 +118,13 @@ export async function getTicketNestedData(ticketId: string): Promise<TicketComme
  * 指定されたIDのチケットを更新します。
  *
  * @param prevState - アクションの前の状態。
- * @param partialParams - 更新するチケットのデータ。`TicketSchemaType` の部分型である必要があります。
+ * @param partialParams - 更新するチケットのデータ。`OutputTicketUpdateSchemaType` の部分型である必要があります。
  * @param ticketId - 更新するチケットのID。
  * @returns 更新後のアクション状態を含む `ActionState` オブジェクトを返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function updateTicket(
-  partialParams: Partial<TicketSchemaType>,
+  partialParams: Partial<OutputTicketUpdateSchemaType>,
   ticketId: string,
 ): Promise<ActionState> {
   const prevState: ActionState = { state: "pending", message: "" };

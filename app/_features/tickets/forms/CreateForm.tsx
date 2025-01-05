@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react'
-import { ticketSchema, TicketSchemaType } from '../schema';
+import { ticketCreateSchema, TicketCreateSchemaType, } from '../schema';
 import { createTicket } from '../actions';
 import { useRouter } from 'next/navigation';
 import { PencilIcon } from "@heroicons/react/24/solid"
@@ -16,8 +16,8 @@ export function TicketCreateForm({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { register, handleSubmit, errors, isSubmitting } = useFormActionHandler<TicketSchemaType>({
-    schema: ticketSchema,
+  const { register, handleSubmit, errors, isSubmitting } = useFormActionHandler<TicketCreateSchemaType>({
+    schema: ticketCreateSchema,
     handleAction: createTicket,
     targetId: listId,
     onSuccess: () => {

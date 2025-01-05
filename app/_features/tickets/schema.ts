@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ticketSchema = z.object({
+export const ticketCreateSchema = z.object({
   title: z
     .string()
     .min(1, { message: "タイトルを入力してください。" })
@@ -8,28 +8,26 @@ export const ticketSchema = z.object({
   description: z
     .string()
     .max(1000, { message: "説明は1000文字以内で入力してください。" })
-    .nullable()
-    .optional(),
-  startAt: z.preprocess(
-    (value) => {
-      if (typeof value === "string") {
-        const date = new Date(value);
-        return !isNaN(date.getTime()) ? date : null;
-      }
-      return null;
-    },
-    z.date({ message: "Invalid date format" }).nullable().optional(),
-  ) as z.ZodType<string | Date | null | undefined>,
-  endAt: z.preprocess(
-    (value) => {
-      if (typeof value === "string") {
-        const date = new Date(value);
-        return !isNaN(date.getTime()) ? date : null;
-      }
-      return null;
-    },
-    z.date({ message: "Invalid date format" }).nullable().optional(),
-  ) as z.ZodType<string | Date | null | undefined>,
+    .nullish(),
 });
 
-export type TicketSchemaType = z.infer<typeof ticketSchema>;
+export const ticketUpdateSchema = ticketCreateSchema.extend({
+  startAt: z
+    .string()
+    .refine((value) => !value || !isNaN(new Date(value).getTime()), {
+      message: "無効な日付形式です",
+    })
+    .transform((value) => (value ? new Date(value) : null)) // 入力があればDate型に変換
+    .nullish(), // 未入力を許容
+  endAt: z
+    .string()
+    .refine((value) => !value || !isNaN(new Date(value).getTime()), {
+      message: "無効な日付形式です",
+    })
+    .transform((value) => (value ? new Date(value) : null)) // 入力があればDate型に変換
+    .nullish(),
+});
+
+export type TicketCreateSchemaType = z.input<typeof ticketCreateSchema>;
+export type InputTicketUpdateSchemaType = z.input<typeof ticketUpdateSchema>;
+export type OutputTicketUpdateSchemaType = z.output<typeof ticketUpdateSchema>;
