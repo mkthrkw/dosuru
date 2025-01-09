@@ -17,7 +17,6 @@ import { TicketComment } from "@/app/_util/types/nestedType";
 /**
  * チケットを作成します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues 作成するチケットデータを含むオブジェクト。
  * @param listId チケットが属するリストのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
@@ -61,7 +60,7 @@ export async function createTicket(
       const displayId = maxDisplayId._max?.displayId || 0;
 
       // 新規レコードを作成
-      await prisma.ticket.create({
+      await tx.ticket.create({
         data: {
           title: inputValues.title,
           order: order + 1,
@@ -90,21 +89,24 @@ export async function createTicket(
  * 指定されたIDのチケットとそのコメントを取得します。
  *
  * @param ticketId 取得するチケットのID。
- * @returns チケットデータとコメントを含む `TicketComment` 型のオブジェクト、またはチケットが見つからない場合は `null` を返します。
- * @throws チケットデータの取得に失敗した場合、エラーをスローします。
+ * @returns チケットデータとコメントを含む `TicketComment` 型のオブジェクトをPromiseで返します。
+ *          チケットが見つからない場合は `null` を返します。
+ *          取得に失敗した場合は、エラーをconsole.errorに出力し、nullを返します。
  */
 export async function getTicketNestedData(ticketId: string): Promise<TicketComment | null> {
   try {
-    return await prisma.ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
       include: {
         comments: {
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
         },
       },
     });
+    return ticket;
   } catch (error) {
-    throw new Error(`Failed to get ticket data: ${error}`);
+    console.error(`Failed to get ticket data: ${error}`);
+    return null;
   }
 }
 
@@ -117,9 +119,8 @@ export async function getTicketNestedData(ticketId: string): Promise<TicketComme
 /**
  * 指定されたIDのチケットを更新します。
  *
- * @param prevState - アクションの前の状態。
- * @param partialParams - 更新するチケットのデータ。`OutputTicketUpdateSchemaType` の部分型である必要があります。
- * @param ticketId - 更新するチケットのID。
+ * @param partialParams 更新するチケットのデータ。`OutputTicketUpdateSchemaType` の部分型である必要があります。
+ * @param ticketId 更新するチケットのID。
  * @returns 更新後のアクション状態を含む `ActionState` オブジェクトを返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
@@ -146,9 +147,8 @@ export async function updateTicket(
 /**
  * 指定されたIDのチケットの完了状態を更新します。
  *
- * @param prevState - アクションの前の状態。
- * @param completed - チケットの完了状態 (`true` または `false`)。
- * @param ticketId - 更新するチケットのID。
+ * @param completed チケットの完了状態 (`true` または `false`)。
+ * @param ticketId 更新するチケットのID。
  * @returns 更新後のアクション状態を含む `ActionState` オブジェクトを返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
@@ -181,8 +181,7 @@ export async function updateTicketCompleted(
 /**
  * 指定されたIDのチケットを削除します。
  *
- * @param prevState - アクションの前の状態。
- * @param ticketId - 削除するチケットのID。
+ * @param ticketId 削除するチケットのID。
  * @returns 削除後のアクション状態を含む `ActionState` オブジェクトを返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
