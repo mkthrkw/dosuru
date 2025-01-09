@@ -18,7 +18,6 @@ import { revalidatePath } from "next/cache";
 /**
  * 新しいプロジェクトを作成します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues プロジェクトの作成に必要なデータを含むオブジェクト。
  *                    name: プロジェクト名
  *                    description: プロジェクトの説明
@@ -41,7 +40,7 @@ export async function createProject(inputValues: ProjectSchemaType): Promise<Act
       const order = maxOrder._max?.order || 0;
 
       // 新規レコードを作成
-      await prisma.project.create({
+      await tx.project.create({
         data: {
           name: inputValues.name,
           description: inputValues.description,
@@ -71,9 +70,9 @@ export async function createProject(inputValues: ProjectSchemaType): Promise<Act
  * 現在のユーザーが作成したプロジェクトを全て取得します。
  *
  * @returns プロジェクトの配列をPromiseで返します。
- * @throws プロジェクトの取得に失敗した場合にエラーをスローします。
+ *          取得に失敗した場合はnullを返します。
  */
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(): Promise<Project[] | null> {
   try {
     const userId = await getSessionUserId();
     return await prisma.project.findMany({
@@ -81,16 +80,16 @@ export async function getProjects(): Promise<Project[]> {
       orderBy: { order: "desc" },
     });
   } catch (error) {
-    throw new Error(`Failed to fetch projects: ${error}`);
+    console.error(`Failed to fetch projects: ${error}`);
+    return null;
   }
 }
 
 /**
  * 指定されたIDを持つプロジェクトの詳細を取得します。
  *
- * @param projectId 取得するプロジェクトのID。
+ * @param targetId 取得するプロジェクトのID。
  * @returns プロジェクトが見つかった場合はプロジェクトオブジェクト、見つからなかった場合はnullをPromiseで返します。
- * @throws プロジェクトの取得に失敗した場合にエラーをスローします。
  */
 export async function getProjectDetail(targetId: string): Promise<Project | null> {
   try {
@@ -98,17 +97,17 @@ export async function getProjectDetail(targetId: string): Promise<Project | null
       where: { id: targetId },
     });
   } catch (error) {
-    throw new Error(`Failed to fetch project: ${error}`);
+    console.error(`Failed to fetch project: ${error}`);
+    return null;
   }
 }
 
 /**
  * 指定されたIDを持つプロジェクトの詳細と、関連するリストとチケットをネストした形式で取得します。
  *
- * @param projectId 取得するプロジェクトのID。
+ * @param targetId 取得するプロジェクトのID。
  * @returns プロジェクト、リスト、チケットがネストされたオブジェクトをPromiseで返します。
  *          プロジェクトが見つからなかった場合はnullを返します。
- * @throws プロジェクトの取得に失敗した場合にエラーをスローします。
  */
 export async function getProjectNestedData(targetId: string): Promise<ProjectListTicket | null> {
   try {
@@ -124,7 +123,8 @@ export async function getProjectNestedData(targetId: string): Promise<ProjectLis
       },
     });
   } catch (error) {
-    throw new Error(`Failed to fetch project: ${error}`);
+    console.error(`Failed to fetch project: ${error}`);
+    return null;
   }
 }
 
@@ -137,9 +137,8 @@ export async function getProjectNestedData(targetId: string): Promise<ProjectLis
 /**
  * プロジェクトを更新します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues 更新するプロジェクトデータを含むオブジェクト。
- * @param projectId 更新するプロジェクトのID。
+ * @param targetId 更新するプロジェクトのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
@@ -172,9 +171,8 @@ export async function updateProject(
 /**
  * プロジェクトのアバター画像を更新します。
  *
- * @param prevState アクション前の状態。
  * @param fileString アップロードする画像のファイル文字列。
- * @param projectId 更新するプロジェクトのID。
+ * @param targetId 更新するプロジェクトのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
@@ -214,7 +212,6 @@ export async function updateProjectAvatar(
 /**
  * プロジェクトの表示順序を更新します。
  *
- * @param prevState アクション前の状態。
  * @param projects 更新するプロジェクトの配列。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
@@ -249,8 +246,7 @@ export async function updateProjectsOrder(projects: Project[]): Promise<ActionSt
 /**
  * プロジェクトを削除します。
  *
- * @param prevState アクション前の状態。
- * @param projectId 削除するプロジェクトのID。
+ * @param targetId 削除するプロジェクトのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
