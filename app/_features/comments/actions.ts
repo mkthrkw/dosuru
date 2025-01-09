@@ -13,7 +13,6 @@ import { prisma } from "@/prisma/prisma";
 /**
  * 新しいコメントを作成します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues コメントの作成に必要なデータを含むオブジェクト。
  *                    text: コメントのテキスト
  * @param ticketId コメントが属するチケットのID。
@@ -51,7 +50,6 @@ export async function createComment(
 /**
  * コメントを更新します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues 更新するコメントのデータを含むオブジェクト。
  *                    text: コメントのテキスト
  * @param commentId 更新するコメントのID。
@@ -91,7 +89,6 @@ export async function updateComment(
 /**
  * コメントを削除します。
  *
- * @param prevState アクション前の状態。
  * @param commentId 削除するコメントのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。

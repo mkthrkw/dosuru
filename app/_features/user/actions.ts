@@ -18,7 +18,6 @@ import { revalidatePath } from "next/cache";
 /**
  * 新しいユーザーを作成します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues ユーザーの作成に必要なデータを含むオブジェクト。
  *                    name: ユーザー名
  *                    email: ユーザーのメールアドレス
@@ -75,15 +74,15 @@ export async function getSessionUserId(): Promise<string> {
  * メールアドレスに基づいてユーザーを検索します。
  *
  * @param email 検索するユーザーのメールアドレス。
- * @returns ユーザーが見つかった場合はユーザーオブジェクト、見つからなかった場合はnullを返します。
- * @throws ユーザーの取得に失敗した場合にエラーをスローします。
+ * @returns ユーザーが見つかった場合はユーザーオブジェクト、見つからなかった場合はnullをPromiseで返します。
  */
 export async function getUserByEmail(email: string): Promise<User | null> {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     return user;
   } catch (error) {
-    throw new Error(`Failed to fetch user: : ${error}`);
+    console.error(`Failed to fetch user: : ${error}`);
+    return null;
   }
 }
 
@@ -91,18 +90,15 @@ export async function getUserByEmail(email: string): Promise<User | null> {
  * 現在のセッションのユーザーインスタンスを取得します。
  *
  * @returns ユーザーが見つかった場合はユーザーオブジェクト、見つからなかった場合はnullを返します。
- * @throws ユーザーの取得に失敗した場合にエラーをスローします。
  */
 export async function getUserInstance(): Promise<User | null> {
   try {
     const userId = await getSessionUserId();
-    if (!userId) {
-      throw new Error("Failed to get login information.");
-    }
     const user = await prisma.user.findUnique({ where: { id: userId } });
     return user;
   } catch (error) {
-    throw new Error(`Failed to fetch user: : ${error}`);
+    console.error(`Failed to fetch user: : ${error}`);
+    return null;
   }
 }
 
