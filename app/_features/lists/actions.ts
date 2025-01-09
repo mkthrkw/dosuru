@@ -15,7 +15,6 @@ import { ListTicket } from "@/app/_util/types/nestedType";
 /**
  * 新しいリストを作成します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues リストの作成に必要なデータを含むオブジェクト。
  *                    title: リストのタイトル
  *                    color: リストの色
@@ -40,7 +39,7 @@ export async function createList(
       const order = maxOrder._max?.order || 0;
 
       // 新規レコードを作成
-      await prisma.list.create({
+      await tx.list.create({
         data: {
           title: inputValues.title,
           color: inputValues.color,
@@ -68,7 +67,6 @@ export async function createList(
 /**
  * リストを更新します。
  *
- * @param prevState アクション前の状態。
  * @param inputValues 更新するリストのデータを含むオブジェクト。
  *                    title: リストのタイトル
  *                    color: リストの色
@@ -108,7 +106,6 @@ export async function updateList(
 /**
  * プロジェクト内のリストの表示順序を更新します。
  *
- * @param prevState アクション前の状態。
  * @param lists 更新するリストの配列。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
@@ -137,7 +134,6 @@ export async function updateListOrder(lists: List[]): Promise<ActionState> {
 /**
  * プロジェクト内のチケットの表示順序を更新します。
  *
- * @param prevState アクション前の状態。
  * @param lists チケットを含むリストの配列。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
@@ -152,7 +148,7 @@ export async function updateListTicketOrder(lists: ListTicket[]): Promise<Action
             prisma.ticket.update({
               where: { id: ticket.id },
               data: {
-                order: index,
+                order: index + 1,
                 listId: list.id,
               },
             }),
@@ -179,7 +175,6 @@ export async function updateListTicketOrder(lists: ListTicket[]): Promise<Action
 /**
  * リストを削除します。
  *
- * @param prevState アクション前の状態。
  * @param listId 削除するリストのID。
  * @returns 更新後の状態を含むActionStateオブジェクトをPromiseで返します。
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
