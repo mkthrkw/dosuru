@@ -91,7 +91,7 @@ export async function createTicket(
  * @param ticketId 取得するチケットのID。
  * @returns チケットデータとコメントを含む `TicketComment` 型のオブジェクトをPromiseで返します。
  *          チケットが見つからない場合は `null` を返します。
- *          取得に失敗した場合は、エラーをconsole.errorに出力し、nullを返します。
+ * @throws 取得に失敗した場合は、エラーをthrowします。
  */
 export async function getTicketNestedData(ticketId: string): Promise<TicketComment | null> {
   try {
@@ -106,7 +106,7 @@ export async function getTicketNestedData(ticketId: string): Promise<TicketComme
     return ticket;
   } catch (error) {
     console.error(`Failed to get ticket data: ${error}`);
-    return null;
+    throw new Error(`Failed to get ticket data: ${error}`);
   }
 }
 

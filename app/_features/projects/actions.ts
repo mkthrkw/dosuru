@@ -70,18 +70,19 @@ export async function createProject(inputValues: ProjectSchemaType): Promise<Act
  * 現在のユーザーが作成したプロジェクトを全て取得します。
  *
  * @returns プロジェクトの配列をPromiseで返します。
- *          取得に失敗した場合はnullを返します。
+ * @throws 取得に失敗した場合はエラーをスローします。
  */
-export async function getProjects(): Promise<Project[] | null> {
+export async function getProjects(): Promise<Project[]> {
   try {
     const userId = await getSessionUserId();
-    return await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: { userId: userId },
       orderBy: { order: "desc" },
     });
+    return projects;
   } catch (error) {
     console.error(`Failed to fetch projects: ${error}`);
-    return null;
+    throw new Error(`Failed to fetch projects: ${error}`);
   }
 }
 
@@ -90,15 +91,17 @@ export async function getProjects(): Promise<Project[] | null> {
  *
  * @param targetId 取得するプロジェクトのID。
  * @returns プロジェクトが見つかった場合はプロジェクトオブジェクト、見つからなかった場合はnullをPromiseで返します。
+ * @throws プロジェクト情報の取得に失敗した場合にエラーをスローします。
  */
 export async function getProjectDetail(targetId: string): Promise<Project | null> {
   try {
-    return await prisma.project.findUnique({
+    const project = await prisma.project.findUnique({
       where: { id: targetId },
     });
+    return project;
   } catch (error) {
     console.error(`Failed to fetch project: ${error}`);
-    return null;
+    throw new Error(`Failed to fetch project: ${error}`);
   }
 }
 
@@ -108,10 +111,11 @@ export async function getProjectDetail(targetId: string): Promise<Project | null
  * @param targetId 取得するプロジェクトのID。
  * @returns プロジェクト、リスト、チケットがネストされたオブジェクトをPromiseで返します。
  *          プロジェクトが見つからなかった場合はnullを返します。
+ * @throws 取得に失敗した場合はエラーをスローします。
  */
 export async function getProjectNestedData(targetId: string): Promise<ProjectListTicket | null> {
   try {
-    return await prisma.project.findUnique({
+    const project = await prisma.project.findUnique({
       where: { id: targetId },
       include: {
         lists: {
@@ -122,9 +126,10 @@ export async function getProjectNestedData(targetId: string): Promise<ProjectLis
         },
       },
     });
+    return project;
   } catch (error) {
     console.error(`Failed to fetch project: ${error}`);
-    return null;
+    throw new Error(`Failed to fetch project: ${error}`);
   }
 }
 

@@ -57,7 +57,7 @@ export async function createUser(inputValues: CreateUserSchemaType): Promise<Act
 /**
  * 現在のセッションからユーザーIDを取得します。
  *
- * @returns ユーザーID、またはユーザーがログインしていない場合はundefinedを返します。
+ * @returns ユーザーIDをPromiseで返します。ユーザーがログインしていない場合はエラーをスローします。
  * @throws ログイン情報の取得に失敗した場合にエラーをスローします。
  */
 export async function getSessionUserId(): Promise<string> {
@@ -74,7 +74,8 @@ export async function getSessionUserId(): Promise<string> {
  * メールアドレスに基づいてユーザーを検索します。
  *
  * @param email 検索するユーザーのメールアドレス。
- * @returns ユーザーが見つかった場合はユーザーオブジェクト、見つからなかった場合はnullをPromiseで返します。
+ * @returns ユーザーが見つかった場合はユーザーオブジェクトをPromiseで返します。見つからなかった場合はnullを返します。
+ * @throws ユーザー情報の取得に失敗した場合にエラーをスローします。
  */
 export async function getUserByEmail(email: string): Promise<User | null> {
   try {
@@ -82,14 +83,15 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     return user;
   } catch (error) {
     console.error(`Failed to fetch user: : ${error}`);
-    return null;
+    throw new Error(`Failed to fetch user: ${error}`);
   }
 }
 
 /**
  * 現在のセッションのユーザーインスタンスを取得します。
  *
- * @returns ユーザーが見つかった場合はユーザーオブジェクト、見つからなかった場合はnullを返します。
+ * @returns ユーザーが見つかった場合はユーザーオブジェクトをPromiseで返します。見つからなかった場合はnullを返します。
+ * @throws ユーザー情報の取得に失敗した場合にエラーをスローします。
  */
 export async function getUserInstance(): Promise<User | null> {
   try {
@@ -98,7 +100,7 @@ export async function getUserInstance(): Promise<User | null> {
     return user;
   } catch (error) {
     console.error(`Failed to fetch user: : ${error}`);
-    return null;
+    throw new Error(`Failed to fetch user: ${error}`);
   }
 }
 
