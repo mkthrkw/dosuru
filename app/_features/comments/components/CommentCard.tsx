@@ -28,7 +28,7 @@ export function CommentCard({
           setIsEditing={setIsEditing}
         />
         : <>
-          <div className='text-sm break-words text-base-content/60 text-left p-2'>
+          <div className='text-sm break-words text-base-content/60 text-left p-2 whitespace-pre-wrap'>
             {comment.text}
           </div>
           <div className='flex justify-between px-2 pb-1'>
