@@ -1,12 +1,12 @@
 "use server";
 
-import { prisma } from "@/prisma/prisma";
-import {
-  OutputTicketUpdateSchemaType,
-  TicketCreateSchemaType,
+import type {
+	OutputTicketUpdateSchemaType,
+	TicketCreateSchemaType,
 } from "@/app/_features/tickets/schema";
-import { ActionState } from "@/app/_util/types/actionType";
-import { TicketComment } from "@/app/_util/types/nestedType";
+import type { ActionState } from "@/app/_util/types/actionType";
+import type { TicketComment } from "@/app/_util/types/nestedType";
+import { prisma } from "@/prisma/prisma";
 
 /* ==================================================================
  *
@@ -23,60 +23,60 @@ import { TicketComment } from "@/app/_util/types/nestedType";
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function createTicket(
-  inputValues: TicketCreateSchemaType,
-  listId: string,
+	inputValues: TicketCreateSchemaType,
+	listId: string,
 ): Promise<ActionState> {
-  const prevState: ActionState = { state: "pending", message: "" };
-  try {
-    await prisma.$transaction(async (tx) => {
-      // 既存レコードの表示順序最大値を取得
-      const maxOrder = await tx.ticket.aggregate({
-        _max: { order: true },
-        where: { listId: listId },
-      });
-      // リストIDからプロジェクトIDを取得
-      const targetList = await tx.list.findUnique({
-        where: {
-          id: listId,
-        },
-        select: {
-          projectId: true,
-        },
-      });
-      if (!targetList?.projectId) throw new Error("Project ID not found.");
+	const prevState: ActionState = { state: "pending", message: "" };
+	try {
+		await prisma.$transaction(async (tx) => {
+			// 既存レコードの表示順序最大値を取得
+			const maxOrder = await tx.ticket.aggregate({
+				_max: { order: true },
+				where: { listId: listId },
+			});
+			// リストIDからプロジェクトIDを取得
+			const targetList = await tx.list.findUnique({
+				where: {
+					id: listId,
+				},
+				select: {
+					projectId: true,
+				},
+			});
+			if (!targetList?.projectId) throw new Error("Project ID not found.");
 
-      // 同じプロジェクトに紐づくチケットの最大displayIDを取得
-      const maxDisplayId = await tx.ticket.aggregate({
-        _max: { displayId: true },
-        where: {
-          list: {
-            projectId: targetList.projectId,
-          },
-        },
-      });
+			// 同じプロジェクトに紐づくチケットの最大displayIDを取得
+			const maxDisplayId = await tx.ticket.aggregate({
+				_max: { displayId: true },
+				where: {
+					list: {
+						projectId: targetList.projectId,
+					},
+				},
+			});
 
-      // レコードが存在しない場合は0を設定
-      const order = maxOrder._max?.order || 0;
-      const displayId = maxDisplayId._max?.displayId || 0;
+			// レコードが存在しない場合は0を設定
+			const order = maxOrder._max?.order || 0;
+			const displayId = maxDisplayId._max?.displayId || 0;
 
-      // 新規レコードを作成
-      await tx.ticket.create({
-        data: {
-          title: inputValues.title,
-          order: order + 1,
-          displayId: displayId + 1,
-          listId: listId,
-        },
-      });
-    });
-    prevState.state = "resolved";
-    prevState.message = "Ticket created successfully.";
-    return prevState;
-  } catch (error) {
-    prevState.state = "rejected";
-    prevState.message = `Failed to create ticket: ${error}`;
-    return prevState;
-  }
+			// 新規レコードを作成
+			await tx.ticket.create({
+				data: {
+					title: inputValues.title,
+					order: order + 1,
+					displayId: displayId + 1,
+					listId: listId,
+				},
+			});
+		});
+		prevState.state = "resolved";
+		prevState.message = "Ticket created successfully.";
+		return prevState;
+	} catch (error) {
+		prevState.state = "rejected";
+		prevState.message = `Failed to create ticket: ${error}`;
+		return prevState;
+	}
 }
 
 /* ==================================================================
@@ -93,21 +93,23 @@ export async function createTicket(
  *          チケットが見つからない場合は `null` を返します。
  * @throws 取得に失敗した場合は、エラーをthrowします。
  */
-export async function getTicketNestedData(ticketId: string): Promise<TicketComment | null> {
-  try {
-    const ticket = await prisma.ticket.findUnique({
-      where: { id: ticketId },
-      include: {
-        comments: {
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
-    return ticket;
-  } catch (error) {
-    console.error(`Failed to get ticket data: ${error}`);
-    throw new Error(`Failed to get ticket data: ${error}`);
-  }
+export async function getTicketNestedData(
+	ticketId: string,
+): Promise<TicketComment | null> {
+	try {
+		const ticket = await prisma.ticket.findUnique({
+			where: { id: ticketId },
+			include: {
+				comments: {
+					orderBy: { createdAt: "desc" },
+				},
+			},
+		});
+		return ticket;
+	} catch (error) {
+		console.error(`Failed to get ticket data: ${error}`);
+		throw new Error(`Failed to get ticket data: ${error}`);
+	}
 }
 
 /* ==================================================================
@@ -125,23 +127,23 @@ export async function getTicketNestedData(ticketId: string): Promise<TicketComme
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function updateTicket(
-  partialParams: Partial<OutputTicketUpdateSchemaType>,
-  ticketId: string,
+	partialParams: Partial<OutputTicketUpdateSchemaType>,
+	ticketId: string,
 ): Promise<ActionState> {
-  const prevState: ActionState = { state: "pending", message: "" };
-  try {
-    await prisma.ticket.update({
-      where: { id: ticketId },
-      data: partialParams,
-    });
-    prevState.state = "resolved";
-    prevState.message = "Ticket updated successfully.";
-    return prevState;
-  } catch (error) {
-    prevState.state = "rejected";
-    prevState.message = `Failed to update ticket: ${error}`;
-    return prevState;
-  }
+	const prevState: ActionState = { state: "pending", message: "" };
+	try {
+		await prisma.ticket.update({
+			where: { id: ticketId },
+			data: partialParams,
+		});
+		prevState.state = "resolved";
+		prevState.message = "Ticket updated successfully.";
+		return prevState;
+	} catch (error) {
+		prevState.state = "rejected";
+		prevState.message = `Failed to update ticket: ${error}`;
+		return prevState;
+	}
 }
 
 /**
@@ -153,23 +155,23 @@ export async function updateTicket(
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function updateTicketCompleted(
-  completed: boolean,
-  ticketId: string,
+	completed: boolean,
+	ticketId: string,
 ): Promise<ActionState> {
-  const prevState: ActionState = { state: "pending", message: "" };
-  try {
-    await prisma.ticket.update({
-      where: { id: ticketId },
-      data: { completed: completed },
-    });
-    prevState.state = "resolved";
-    prevState.message = "Ticket updated successfully.";
-    return prevState;
-  } catch (error) {
-    prevState.state = "rejected";
-    prevState.message = `Failed to update ticket: ${error}`;
-    return prevState;
-  }
+	const prevState: ActionState = { state: "pending", message: "" };
+	try {
+		await prisma.ticket.update({
+			where: { id: ticketId },
+			data: { completed: completed },
+		});
+		prevState.state = "resolved";
+		prevState.message = "Ticket updated successfully.";
+		return prevState;
+	} catch (error) {
+		prevState.state = "rejected";
+		prevState.message = `Failed to update ticket: ${error}`;
+		return prevState;
+	}
 }
 
 /* ==================================================================
@@ -186,17 +188,17 @@ export async function updateTicketCompleted(
  *          成功した場合は state が "resolved" に、失敗した場合は state が "rejected" に設定されます。
  */
 export async function deleteTicket(ticketId: string): Promise<ActionState> {
-  const prevState: ActionState = { state: "pending", message: "" };
-  try {
-    await prisma.ticket.delete({
-      where: { id: ticketId },
-    });
-    prevState.state = "resolved";
-    prevState.message = "Ticket deleted successfully.";
-    return prevState;
-  } catch (error) {
-    prevState.state = "rejected";
-    prevState.message = `Failed to delete ticket: ${error}`;
-    return prevState;
-  }
+	const prevState: ActionState = { state: "pending", message: "" };
+	try {
+		await prisma.ticket.delete({
+			where: { id: ticketId },
+		});
+		prevState.state = "resolved";
+		prevState.message = "Ticket deleted successfully.";
+		return prevState;
+	} catch (error) {
+		prevState.state = "rejected";
+		prevState.message = `Failed to delete ticket: ${error}`;
+		return prevState;
+	}
 }
