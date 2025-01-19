@@ -1,42 +1,43 @@
 "use client";
 
-import React, { useRef } from 'react'
 import { CommonModal } from '@/app/_components/modals/CommonModal'
-import { useRouter } from 'next/navigation';
-import { deleteTicket } from '../actions';
-import { TrashIcon } from '@heroicons/react/24/solid';
 import { useClickActionHandler } from '@/app/_util/hooks/useClickActionHandler';
+import { TrashIcon } from '@heroicons/react/24/solid';
+import { useRouter } from 'next/navigation';
+import React, { useRef } from 'react'
+import { useTicketModalStore } from '../../lists/store/useTicketModalStore';
+import { deleteTicket } from '../actions';
 
 
 export function TicketDeleteForm({
   ticketId,
-  underDialog,
 }: {
   ticketId: string
-  underDialog: React.RefObject<HTMLDialogElement | null>
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const router = useRouter();
+  const { ticketModalClose } = useTicketModalStore();
 
   const { handleClick, isSubmitting } = useClickActionHandler({
     handleAction: deleteTicket,
     targetId: ticketId,
     onSuccess: () => {
       dialog.current?.close();
-      underDialog.current?.close();
+      ticketModalClose();
       router.refresh();
     },
   });
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className='text-error/80'
         onClick={() => dialog.current?.showModal()}
       >
         <TrashIcon className='w-5 h-5 text-error/50' />
         チケットの削除
-      </div>
+      </button>
       <CommonModal
         dialog={dialog}
         title='チケットの削除'
@@ -46,6 +47,7 @@ export function TicketDeleteForm({
       >
         <form onSubmit={handleClick}>
           <button
+            type='submit'
             className='btn btn-outline btn-error btn-wide'
           >
             削除実行

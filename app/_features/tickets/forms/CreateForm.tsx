@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from 'react'
-import { ticketCreateSchema, TicketCreateSchemaType, } from '../schema';
-import { createTicket } from '../actions';
-import { useRouter } from 'next/navigation';
-import { PencilIcon } from "@heroicons/react/24/solid"
 import { LoadingDots } from '@/app/_components/common/LoadingDots';
 import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
+import { PencilIcon } from "@heroicons/react/24/solid"
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react'
+import { createTicket } from '../actions';
+import { type TicketCreateSchemaType, ticketCreateSchema, } from '../schema';
 
 export function TicketCreateForm({
   listId,
@@ -21,8 +21,8 @@ export function TicketCreateForm({
     handleAction: createTicket,
     targetId: listId,
     onSuccess: () => {
-      setIsOpen(false);
       router.refresh();
+      setIsOpen(false);
     },
     formReset: true,
   });
@@ -32,6 +32,7 @@ export function TicketCreateForm({
       {isSubmitting && <LoadingDots />}
       <div className='px-4'>
         <button
+          type='button'
           onClick={() => setIsOpen(!isOpen)}
           className="btn btn-xs btn-outline btn-primary w-full"
         >
