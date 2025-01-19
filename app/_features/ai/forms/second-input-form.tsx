@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingDots } from "@/app/_components/common/LoadingDots";
-import { useAiFormInputs } from "@/app/_util/hooks/useAiFormInputs";
+import { useLlmFormStore } from "@/app/_features/ai/store/useLlmFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -16,7 +16,7 @@ export function SecondInputForm() {
     mode: "onSubmit"
   })
 
-  const { aiFormInputs } = useAiFormInputs();
+  const { inputValue } = useLlmFormStore();
   const router = useRouter();
 
   const onSubmit = async (data: AiSecondInputSchemaType) => {
@@ -31,7 +31,7 @@ export function SecondInputForm() {
 
   return (
     <>
-      {aiFormInputs.inputValue && (
+      {inputValue && (
         <>
           {isSubmitting && <LoadingDots />}
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -39,7 +39,7 @@ export function SecondInputForm() {
               <textarea
                 {...register("second_input")}
                 className="textarea w-full focus:outline-none px-2 pt-2 text-base-content text-left border-2 border-base-content/10 rounded-xl placeholder:text-base-content/50 whitespace-pre-wrap"
-                defaultValue={aiFormInputs.inputValue}
+                defaultValue={inputValue}
               />
               {errors.second_input && <p className="text-red-500 text-sm">{errors.second_input.message}</p>}
             </div>

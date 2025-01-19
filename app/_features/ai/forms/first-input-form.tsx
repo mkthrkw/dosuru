@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingDots } from "@/app/_components/common/LoadingDots";
-import { useAiFormInputs } from "@/app/_util/hooks/useAiFormInputs";
+import { useLlmFormStore } from "@/app/_features/ai/store/useLlmFormStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -15,12 +15,12 @@ export function FirstInputForm() {
     mode: "onSubmit"
   })
 
-  const { aiFormInputs, setAiFormInputs } = useAiFormInputs();
+  const { inputValue, setValue } = useLlmFormStore();
 
   const onSubmit = async (data: AiFirstInputSchemaType) => {
     const result = await breakDownTheTaskByAi({ inputValues: data });
     if (result.state === "resolved") {
-      setAiFormInputs({ inputValue: result.message });
+      setValue(result.message);
     }
     if (result.state === "rejected") {
       toast.error(result.message);
@@ -29,7 +29,7 @@ export function FirstInputForm() {
 
   return (
     <>
-      {!aiFormInputs.inputValue && (
+      {!inputValue && (
         <>
           {isSubmitting && <LoadingDots />}
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
