@@ -1,25 +1,19 @@
 "use client";
-import { CommonModal } from '@/app/_components/modals/CommonModal';
-import React, { useEffect } from 'react'
-import { listSchema, ListSchemaType } from '../schema';
-import { updateList } from '../actions';
+import { FormModal } from '@/app/_components/modals/FormModal';
+import { useListModalStore } from '@/app/_features/lists/store/useListModalStore';
 import {
-  tuttiFrutti,
-  retroPop,
   grayScale,
+  retroPop,
+  tuttiFrutti,
 } from '@/app/_util/colors/colorPalette';
-import { ListDeleteForm } from './DeleteForm';
-import { useRouter } from 'next/navigation';
 import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
-import { List } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react'
+import { updateList } from '../actions';
+import { type ListSchemaType, listSchema } from '../schema';
+import { ListDeleteForm } from './DeleteForm';
 
-export function ListUpdateForm({
-  modalProps,
-  dialog,
-}: {
-  modalProps: List | null,
-  dialog: React.RefObject<HTMLDialogElement | null>
-}) {
+export function ListUpdateForm() {
 
   const colors = [
     tuttiFrutti,
@@ -29,49 +23,52 @@ export function ListUpdateForm({
   const [colorState, setColorState] = React.useState<string>('');
 
   const router = useRouter();
+  const { isListModalOpen, listModalProps, listModalClose } = useListModalStore();
 
   const { register, handleSubmit, errors, isSubmitting, setValue } = useFormActionHandler<ListSchemaType>({
     schema: listSchema,
     handleAction: updateList,
-    targetId: modalProps?.id,
+    targetId: listModalProps?.id,
     onSuccess: () => {
-      dialog.current?.close();
+      listModalClose();
       router.refresh();
     },
     formReset: false,
   });
 
   useEffect(() => {
-    if (dialog.current?.open && modalProps) {
-      setValue('title', modalProps.title);
-      setValue('color', modalProps.color);
-      setColorState(modalProps.color);
+    if (isListModalOpen && listModalProps) {
+      setValue('title', listModalProps.title);
+      setValue('color', listModalProps.color);
+      setColorState(listModalProps.color);
     }
-  }, [dialog, modalProps, setValue]);
+  }, [isListModalOpen, listModalProps, setValue]);
 
   return (
     <>
-      <CommonModal
-        dialog={dialog}
+      <FormModal
+        isOpen={isListModalOpen}
+        modalClose={listModalClose}
         title={'リストの編集'}
-        addClass='overflow-hidden'
+        className='overflow-hidden'
         isSubmitting={isSubmitting}
       >
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-2"
         >
-          <label className="label">リスト名</label>
+          <label htmlFor='title' className="label">リスト名</label>
           <input
-            {...register('title', { value: modalProps?.title })}
+            id='title'
+            {...register('title', { value: listModalProps?.title })}
             className="input input-bordered"
           />
           {errors.title && <p className="text-error text-xs mt-1">{errors.title.message}</p>}
-          <label className='label'>リストの色</label>
+          <label htmlFor='color' className='label'>リストの色</label>
           <div className='flex gap-4 justify-around px-4 items-center'>
             <div className='flex flex-col gap-2'>
-              {colors.map((colorList, index) => (
-                <div className="flex gap-2" key={`colorList${index}`}>
+              {colors.map((colorList) => (
+                <div className="flex gap-2" key={colorList.join('-')}>
                   {colorList.map((color) => (
                     <div
                       className="w-6 h-6 rounded-full flex-none"
@@ -79,6 +76,7 @@ export function ListUpdateForm({
                       key={color}
                     >
                       <input
+                        id='color'
                         type='radio'
                         {...register('color')}
                         value={color}
@@ -93,7 +91,7 @@ export function ListUpdateForm({
             <div
               className='w-24 h-24 rounded-full'
               style={{ backgroundColor: colorState }}
-            ></div>
+            />
           </div>
           <button
             type='submit'
@@ -102,9 +100,9 @@ export function ListUpdateForm({
             保存
           </button>
         </form>
-        <div className="divider my-6"></div>
-        <ListDeleteForm listId={modalProps?.id ?? ''} underDialog={dialog} />
-      </CommonModal>
+        <div className="divider my-6" />
+        <ListDeleteForm listId={listModalProps?.id ?? ''} />
+      </FormModal>
     </>
   )
 }
