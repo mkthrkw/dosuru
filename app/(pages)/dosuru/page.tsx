@@ -1,24 +1,19 @@
-import { LoadingDots } from "@/app/_components/common/LoadingDots";
-import { getProjects } from "@/app/_features/projects/actions";
-import { ProjectColumn } from "@/app/_features/projects/components/ProjectColumn";
-import { Suspense } from "react";
-
-// セッションからユーザーを特定する必要があるため
-export const dynamic = "force-dynamic";
+import { FirstInputForm } from "@/app/_features/ai/forms/first-input-form";
+import { SecondInputForm } from "@/app/_features/ai/forms/second-input-form";
 
 export default async function Page() {
 
-  const projects = await getProjects();
-
   return (
     <>
-      <div className="py-8 px-4 w-full h-full">
-        <h1 className="text-4xl text-center mb-10">This is ProjectList</h1>
-        <div className="flex flex-col gap-3 mx-auto justify-between max-w-md">
-          <Suspense fallback={<LoadingDots />}>
-            <ProjectColumn projects={projects} />
-          </Suspense>
+      <div className="py-8 h-full justify-center max-w-md mx-auto flex flex-col gap-8">
+        <h1 className="text-4xl text-center">Are you dosuru?</h1>
+        <div className="text-left mx-auto">
+          <p>1. やりたいことを入力してください。</p>
+          <p>2. いくつかのタスクに分解します。</p>
+          <p>3. そのタスクからプロジェクトを作成します。</p>
         </div>
+        <FirstInputForm />
+        <SecondInputForm />
       </div>
     </>
   );
