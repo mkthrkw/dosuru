@@ -1,20 +1,19 @@
 "use client";
-import { TicketCard } from "../../tickets/components/TicketCard";
-import { Sortable } from "@/app/_lib/dnd_kit/Sortable";
-import { SortableContext, useSortable } from "@dnd-kit/sortable";
+import { useListModalStore } from "@/app/_features/lists/store/useListModalStore";
+import { TicketCreateForm } from "@/app/_features/tickets/forms/CreateForm";
 import { Droppable } from "@/app/_lib/dnd_kit/Droppable";
+import { Sortable } from "@/app/_lib/dnd_kit/Sortable";
+import type { ListTicket } from "@/app/_util/types/nestedType";
+import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from '@dnd-kit/utilities';
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { TicketCreateForm } from "@/app/_features/tickets/forms/CreateForm";
-import { ListTicket } from "@/app/_util/types/nestedType";
-import { Ticket } from "@prisma/client";
+import type { Ticket } from "@prisma/client";
+import { TicketCard } from "../../tickets/components/TicketCard";
 
 export function ListCard({
   list,
-  handleListModalOpen,
 }: {
   list: ListTicket,
-  handleListModalOpen: (list: ListTicket) => void,
 }) {
 
   const {
@@ -35,6 +34,8 @@ export function ListCard({
     opacity: isDragging ? 0.3 : 1,
   };
 
+  const { listModalOpen } = useListModalStore();
+
   return (
     <div className="flex-none w-screen lg:w-72 px-2 lg:px-0">
       <div
@@ -54,7 +55,15 @@ export function ListCard({
         <div className="flex justify-between mb-2 border-b-2 mt-2 mx-2 px-2 border-base-content/50">
           <h2 className="text-xl">{list.title}</h2>
           <div className='tooltip tooltip-right' data-tip="リストの編集">
-            <div onClick={() => handleListModalOpen(list)} className="hover:bg-base-content/20 hover:cursor-pointer p-1 rounded-md">
+            <div
+              onClick={() => listModalOpen(list)}
+              onKeyUp={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  listModalOpen(list);
+                }
+              }}
+              className="hover:bg-base-content/20 hover:cursor-pointer p-1 rounded-md"
+            >
               <Bars3Icon className="w-6 h-6 text-base-content" />
             </div>
           </div>
