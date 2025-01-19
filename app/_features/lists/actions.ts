@@ -28,7 +28,7 @@ export async function createList(
 ): Promise<ActionState> {
 	const prevState: ActionState = { state: "pending", message: "" };
 	try {
-		await prisma.$transaction(async (tx) => {
+		const list = await prisma.$transaction(async (tx) => {
 			// 既存レコードの表示順序最大値を取得
 			const maxOrder = await tx.list.aggregate({
 				_max: { order: true },
@@ -39,7 +39,7 @@ export async function createList(
 			const order = maxOrder._max?.order || 0;
 
 			// 新規レコードを作成
-			await tx.list.create({
+			const list = await tx.list.create({
 				data: {
 					title: inputValues.title,
 					color: inputValues.color,
@@ -47,9 +47,11 @@ export async function createList(
 					projectId: projectId,
 				},
 			});
+			return list;
 		});
 		prevState.state = "resolved";
 		prevState.message = "List created successfully.";
+		prevState.createdId = list.id;
 		return prevState;
 	} catch (error) {
 		prevState.state = "rejected";

@@ -31,7 +31,7 @@ export async function createProject(
 	try {
 		const userId = await getSessionUserId();
 
-		await prisma.$transaction(async (tx) => {
+		const project = await prisma.$transaction(async (tx) => {
 			// 既存レコードの表示順序最大値を取得
 			const maxOrder = await tx.project.aggregate({
 				_max: { order: true },
@@ -42,7 +42,7 @@ export async function createProject(
 			const order = maxOrder._max?.order || 0;
 
 			// 新規レコードを作成
-			await tx.project.create({
+			const project = await tx.project.create({
 				data: {
 					name: inputValues.name,
 					description: inputValues.description,
@@ -50,10 +50,12 @@ export async function createProject(
 					userId: userId,
 				},
 			});
+			return project;
 		});
 		revalidatePath("/dosuru");
 		prevState.state = "resolved";
 		prevState.message = "Project created successfully.";
+		prevState.createdId = project.id;
 		return prevState;
 	} catch (error) {
 		prevState.state = "rejected";
