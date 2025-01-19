@@ -1,7 +1,7 @@
 import { AsideProjectColumn } from '@/app/_features/projects/components/AsideProjectColumn';
 import { ProjectCreateForm } from '@/app/_features/projects/forms/CreateForm';
-import { ThemeSelector } from '../common/ThemeSelector';
 import Link from 'next/link';
+import { ThemeSelector } from '../common/ThemeSelector';
 import { Logo } from '../common/logo';
 
 export async function Aside() {
