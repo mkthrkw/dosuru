@@ -1,7 +1,10 @@
 import { FirstInputForm } from "@/app/_features/ai/forms/first-input-form";
 import { SecondInputForm } from "@/app/_features/ai/forms/second-input-form";
 
-export default async function Page() {
+// セッションからユーザーを特定する必要があるため
+export const dynamic = "force-dynamic";
+
+export default function Page() {
 
   return (
     <>
