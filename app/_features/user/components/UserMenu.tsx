@@ -1,8 +1,8 @@
+import defaultImg from '@/public/images/default.jpeg';
 import Image from 'next/image';
 import Link from 'next/link';
-import defaultImg from '@/public/images/default.jpeg';
-import { getUserInstance } from '../actions';
 import { Suspense } from 'react';
+import { getUserInstance } from '../actions';
 
 export async function UserMenu() {
 

@@ -1,6 +1,6 @@
-import { Header } from "@/app/_components/layouts/Header";
-import { Footer } from "@/app/_components/layouts/Footer";
 import { Aside } from "@/app/_components/layouts/Aside";
+import { Footer } from "@/app/_components/layouts/Footer";
+import { Header } from "@/app/_components/layouts/Header";
 
 export default function AppLayout({
   children,
@@ -22,7 +22,7 @@ export default function AppLayout({
         </div>
         {/* ===== Drawer side ===== */}
         <div className="drawer-side z-10">
-          <label htmlFor={drawerId} aria-label="close sidebar" className="drawer-overlay"></label>
+          <label htmlFor={drawerId} aria-label="close sidebar" className="drawer-overlay" />
           <Aside />
         </div>
       </div>
