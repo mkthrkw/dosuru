@@ -1,11 +1,10 @@
 "use client";
-import React, { useContext } from 'react'
-import { commentSchema, CommentSchemaType } from '../schema';
 import { createComment } from '../actions';
+import { type CommentSchemaType, commentSchema } from '../schema';
 
-import { SetTicketNestedDataContext } from '@/app/_features/lists/components/ListColumn';
-import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
 import { AddButton } from '@/app/_components/buttons/AddButton';
+import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
+import { useTicketModalStore } from '../../lists/store/useTicketModalStore';
 
 export function CommentCreateForm({
   ticketId,
@@ -13,14 +12,14 @@ export function CommentCreateForm({
   ticketId: string,
 }) {
 
-  const setTicketModalData = useContext(SetTicketNestedDataContext);
+  const { setTicketModalProps } = useTicketModalStore();
 
   const { register, handleSubmit, errors, isSubmitting } = useFormActionHandler<CommentSchemaType>(
     {
       schema: commentSchema,
       handleAction: createComment,
       targetId: ticketId,
-      onSuccess: () => setTicketModalData(ticketId),
+      onSuccess: () => setTicketModalProps(ticketId),
       formReset: true,
       mode: "onSubmit"
     }

@@ -1,10 +1,6 @@
 "use client";
-import { ListCard } from './ListCard';
-import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext } from '@dnd-kit/sortable';
-import { createContext, useEffect, useState } from 'react';
-import { customClosestCorners } from '@/app/_lib/dnd_kit/customClosestCorners';
 import { TicketCard } from '@/app/_features/tickets/components/TicketCard';
+import { TicketUpdateForm } from '@/app/_features/tickets/forms/UpdateForm';
 import {
   getMovedLists,
   getMovedTicketsOtherContainer,
@@ -12,24 +8,21 @@ import {
   updateMovedLists,
   updateMovedTickets
 } from '@/app/_lib/dnd_kit/actions';
+import { customClosestCorners } from '@/app/_lib/dnd_kit/customClosestCorners';
+import type { ListTicket, ProjectListTicket } from '@/app/_util/types/nestedType';
+import { DndContext, type DragEndEvent, type DragOverEvent, DragOverlay, type DragStartEvent, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext } from '@dnd-kit/sortable';
+import type { Ticket } from '@prisma/client';
+import { useEffect, useState } from 'react';
 import { ListCreateForm } from '../forms/CreateForm';
 import { ListUpdateForm } from '../forms/UpdateForm';
-import { TicketUpdateForm } from '@/app/_features/tickets/forms/UpdateForm';
-import { useListModal } from '../hooks/useListModal';
-import { useTicketModal } from '../hooks/useTicketModal';
-import { ListTicket, ProjectListTicket } from '@/app/_util/types/nestedType';
-import { Ticket } from '@prisma/client';
+import { ListCard } from './ListCard';
 
-
-export const OpenTicketModalContext = createContext<(_ticketId: string) => void>(() => { });
-export const SetTicketNestedDataContext = createContext<(_ticketId: string) => void>(() => { });
 
 export function ListColumn({ projectListTicket }: { projectListTicket: ProjectListTicket }) {
   const [lists, setLists] = useState<ListTicket[]>(projectListTicket.lists);
   const [activeTicket, setActiveTicket] = useState<Ticket | undefined>();
 
-  const { listDialog, listModalProps, handleListModalOpen } = useListModal();
-  const { ticketDialog, ticketModalProps, updateTicketModalProps, handleTicketModalOpen, setTicketNestedData } = useTicketModal();
 
   useEffect(() => {
     setLists(projectListTicket.lists);
@@ -58,11 +51,9 @@ export function ListColumn({ projectListTicket }: { projectListTicket: ProjectLi
           id={projectListTicket.id}
           key={projectListTicket.id}
         >
-          <OpenTicketModalContext.Provider value={handleTicketModalOpen}>
-            {lists.map((list) => (
-              <ListCard list={list} key={list.id} handleListModalOpen={handleListModalOpen} />
-            ))}
-          </OpenTicketModalContext.Provider>
+          {lists.map((list) => (
+            <ListCard list={list} key={list.id} />
+          ))}
         </SortableContext>
         {activeTicket && (
           <DragOverlay>
@@ -73,10 +64,8 @@ export function ListColumn({ projectListTicket }: { projectListTicket: ProjectLi
       <div className="absolute bottom-3 right-3">
         <ListCreateForm projectId={projectListTicket.id} />
       </div>
-      <ListUpdateForm modalProps={listModalProps} dialog={listDialog} />
-      <SetTicketNestedDataContext.Provider value={setTicketNestedData}>
-        <TicketUpdateForm modalProps={ticketModalProps} updateProps={updateTicketModalProps} dialog={ticketDialog} />
-      </SetTicketNestedDataContext.Provider>
+      <ListUpdateForm />
+      <TicketUpdateForm />
     </>
   )
 

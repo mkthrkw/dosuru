@@ -1,12 +1,11 @@
 "use client";
-import React, { useContext } from 'react'
-import { CommentSchemaType, commentSchema } from '../schema';
-import { updateComment } from '../actions';
-import { SetTicketNestedDataContext } from '@/app/_features/lists/components/ListColumn';
-import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
-import { Comment } from '@prisma/client';
 import { CancelButton } from '@/app/_components/buttons/CancelButton';
 import { SaveButton } from '@/app/_components/buttons/SaveButton';
+import { useFormActionHandler } from '@/app/_util/hooks/useFormActionHandler';
+import type { Comment } from '@prisma/client';
+import { useTicketModalStore } from '../../lists/store/useTicketModalStore';
+import { updateComment } from '../actions';
+import { type CommentSchemaType, commentSchema } from '../schema';
 
 export function CommentUpdateForm({
   comment,
@@ -18,14 +17,13 @@ export function CommentUpdateForm({
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
 }) {
 
-  const setTicketModalData = useContext(SetTicketNestedDataContext);
-
+  const { setTicketModalProps } = useTicketModalStore();
   const { register, handleSubmit, errors, isSubmitting } = useFormActionHandler<CommentSchemaType>({
     schema: commentSchema,
     handleAction: updateComment,
     targetId: comment.id,
     onSuccess: () => {
-      setTicketModalData(ticketId);
+      setTicketModalProps(ticketId);
       setIsEditing(false);
     },
   })

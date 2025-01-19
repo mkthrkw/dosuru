@@ -1,62 +1,67 @@
 import { findFirstDifferenceKey, pickObject } from "@/app/_util/helper/object";
-import { toast } from "react-toastify";
+import type { TicketComment } from "@/app/_util/types/nestedType";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  InputTicketUpdateSchemaType,
-  OutputTicketUpdateSchemaType,
-  ticketUpdateSchema,
-} from "../schema";
-import { TicketComment } from "@/app/_util/types/nestedType";
+import { toast } from "react-toastify";
+import { useTicketModalStore } from "../../lists/store/useTicketModalStore";
 import { updateTicket } from "../actions";
+import {
+	type InputTicketUpdateSchemaType,
+	type OutputTicketUpdateSchemaType,
+	ticketUpdateSchema,
+} from "../schema";
 
-export function useTicketUpdateHandler({
-  modalProps,
-  stateUpdateFunction,
-}: {
-  modalProps: TicketComment | null;
-  stateUpdateFunction?: (inputValues: Partial<OutputTicketUpdateSchemaType>) => void;
-}) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-  } = useForm<InputTicketUpdateSchemaType, undefined, OutputTicketUpdateSchemaType>({
-    mode: "onBlur",
-    resolver: zodResolver(ticketUpdateSchema),
-  });
+export function useTicketUpdateHandler() {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+		setValue,
+	} = useForm<
+		InputTicketUpdateSchemaType,
+		undefined,
+		OutputTicketUpdateSchemaType
+	>({
+		mode: "onBlur",
+		resolver: zodResolver(ticketUpdateSchema),
+	});
 
-  const onBlur = useCallback(
-    async (inputValues: OutputTicketUpdateSchemaType) => {
-      if (!modalProps) return;
+	const router = useRouter();
+	const { ticketModalProps, partialUpdateTicketModalProps } =
+		useTicketModalStore();
 
-      const diffKey = findFirstDifferenceKey<OutputTicketUpdateSchemaType, TicketComment>(
-        inputValues,
-        modalProps,
-      );
-      if (!diffKey) return;
-      const targetParam = pickObject(inputValues, [diffKey]);
+	const onBlur = useCallback(
+		async (inputValues: OutputTicketUpdateSchemaType) => {
+			if (!ticketModalProps) return;
 
-      const result = await updateTicket(targetParam, modalProps.id);
-      if (result.state === "resolved") {
-        if (stateUpdateFunction) stateUpdateFunction(targetParam);
-      }
-      if (result.state === "rejected") {
-        toast.error(result.message || "An error occurred", {
-          autoClose: 3000,
-        });
-      }
-    },
-    [modalProps, stateUpdateFunction],
-  );
+			const diffKey = findFirstDifferenceKey<
+				OutputTicketUpdateSchemaType,
+				TicketComment
+			>(inputValues, ticketModalProps);
+			if (!diffKey) return;
+			const targetParam = pickObject(inputValues, [diffKey]);
 
-  return {
-    register,
-    handleSubmit: handleSubmit(onBlur),
-    errors,
-    isSubmitting,
-    setValue,
-  };
+			const result = await updateTicket(targetParam, ticketModalProps.id);
+			if (result.state === "resolved") {
+				partialUpdateTicketModalProps(targetParam);
+				router.refresh();
+			}
+			if (result.state === "rejected") {
+				toast.error(result.message || "An error occurred", {
+					autoClose: 3000,
+				});
+			}
+		},
+		[ticketModalProps, partialUpdateTicketModalProps, router],
+	);
+
+	return {
+		register,
+		handleSubmit: handleSubmit(onBlur),
+		errors,
+		isSubmitting,
+		setValue,
+	};
 }

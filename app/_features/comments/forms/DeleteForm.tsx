@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useContext, useRef } from 'react'
 import { CommonModal } from '@/app/_components/modals/CommonModal'
-import { deleteComment } from '../actions';
-import { TrashIcon } from '@heroicons/react/24/solid';
-import { SetTicketNestedDataContext } from '@/app/_features/lists/components/ListColumn';
 import { useClickActionHandler } from '@/app/_util/hooks/useClickActionHandler';
+import { TrashIcon } from '@heroicons/react/24/solid';
+import React, { useRef } from 'react'
+import { useTicketModalStore } from '../../lists/store/useTicketModalStore';
+import { deleteComment } from '../actions';
 
 
 export function CommentDeleteForm({
@@ -16,20 +16,21 @@ export function CommentDeleteForm({
   ticketId: string,
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const setTicketModalData = useContext(SetTicketNestedDataContext);
+  const { setTicketModalProps } = useTicketModalStore();
 
   const { handleClick, isSubmitting } = useClickActionHandler({
     handleAction: deleteComment,
     targetId: commentId,
     onSuccess: () => {
       dialog.current?.close();
-      setTicketModalData(ticketId);
+      setTicketModalProps(ticketId);
     }
   })
 
   return (
     <>
       <button
+        type='button'
         className='p-0'
         onClick={() => dialog.current?.showModal()}
       >
@@ -43,6 +44,7 @@ export function CommentDeleteForm({
         isSubmitting={isSubmitting}
       >
         <button
+          type='button'
           className='btn btn-outline btn-error btn-wide'
           onClick={handleClick}
         >

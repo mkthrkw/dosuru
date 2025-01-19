@@ -1,57 +1,46 @@
 "use client";
-import { CommonModal } from '@/app/_components/modals/CommonModal';
-import React, { useEffect } from 'react'
-import { TicketDeleteForm } from './DeleteForm';
+import { FormModal } from '@/app/_components/modals/FormModal';
 import { CommentColumn } from '@/app/_features/comments/components/CommentColumn';
-import { EllipsisHorizontalCircleIcon } from '@heroicons/react/24/solid';
-import { getDateInputStyle, getDateTimeFullStyle } from '@/app/_lib/tempo/format';
 import { CompleteBadge } from '@/app/_features/tickets/components/CompleteBadge';
+import { getDateInputStyle, getDateTimeFullStyle } from '@/app/_lib/tempo/format';
+import { EllipsisHorizontalCircleIcon } from '@heroicons/react/24/solid';
+import type React from 'react'
+import { useEffect } from 'react'
+import { useTicketModalStore } from '../../lists/store/useTicketModalStore';
 import { useTicketCompleteHandler } from '../hooks/useTicketCompleteHandler';
 import { useTicketUpdateHandler } from '../hooks/useTicketUpdateHandler';
-import { TicketComment } from '@/app/_util/types/nestedType';
-import { OutputTicketUpdateSchemaType } from '../schema';
+import { TicketDeleteForm } from './DeleteForm';
 
-export function TicketUpdateForm({
-  modalProps,
-  updateProps,
-  dialog,
-}: {
-  modalProps: TicketComment | null,
-  updateProps: (partialParams: Partial<OutputTicketUpdateSchemaType>) => void,
-  dialog: React.RefObject<HTMLDialogElement | null>
-}) {
+export function TicketUpdateForm() {
 
-  const { completed, setCompleted, handleToggle } = useTicketCompleteHandler({
-    modalProps: modalProps,
-    stateUpdateFunction: updateProps,
-  });
+  const { isTicketModalOpen, ticketModalProps, ticketModalClose } = useTicketModalStore();
 
-  const { register, handleSubmit, errors, setValue } = useTicketUpdateHandler({
-    modalProps: modalProps,
-    stateUpdateFunction: updateProps,
-  });
+  const { completed, setCompleted, handleToggle } = useTicketCompleteHandler();
+
+  const { register, handleSubmit, errors, setValue } = useTicketUpdateHandler();
 
   useEffect(() => {
-    if (dialog.current?.open && modalProps) {
-      setValue('title', modalProps.title);
-      setValue('description', modalProps.description);
-      setValue('startAt', getDateInputStyle(modalProps.startAt));
-      setValue('endAt', getDateInputStyle(modalProps.endAt));
-      setCompleted(modalProps.completed);
+    if (isTicketModalOpen && ticketModalProps) {
+      setValue('title', ticketModalProps.title);
+      setValue('description', ticketModalProps.description);
+      setValue('startAt', getDateInputStyle(ticketModalProps.startAt));
+      setValue('endAt', getDateInputStyle(ticketModalProps.endAt));
+      setCompleted(ticketModalProps.completed);
     }
-  }, [modalProps, dialog, setValue, setCompleted]);
+  }, [isTicketModalOpen, ticketModalProps, setValue, setCompleted]);
 
 
   return (
     <>
-      <CommonModal
-        dialog={dialog}
-        addClass='px-2 overflow-hidden pb-1 pt-3 min-h-[80vh] max-h-[95vh]'
+      <FormModal
+        isOpen={isTicketModalOpen}
+        modalClose={ticketModalClose}
+        className='px-2 overflow-hidden pb-1 pt-3 min-h-[80vh] max-h-[95vh]'
       >
-        {modalProps &&
+        {ticketModalProps &&
           <>
             <div className='flex justify-between px-4 text-base-content/40 pb-2'>
-              <div>#{modalProps?.displayId}</div>
+              <div>#{ticketModalProps?.displayId}</div>
               <div className='flex items-center gap-2 mr-10'>
                 <input
                   type="checkbox"
@@ -65,12 +54,12 @@ export function TicketUpdateForm({
             <div className='flex px-4 border-b'>
               <form onBlur={handleSubmit} className="flex flex-col gap-1 w-full">
                 <input
-                  {...register('title', { value: modalProps?.title })}
+                  {...register('title', { value: ticketModalProps?.title })}
                   className="bg-base-100 px-2 text-xl text-base-content/70 focus:text-base-content focus:outline-none focus:border-b-2 focus:border-primary/80"
                 />
                 {errors.title && <p className="text-error text-xs mt-1">{errors.title.message}</p>}
                 <textarea
-                  {...register('description', { value: modalProps?.description })}
+                  {...register('description', { value: ticketModalProps?.description })}
                   className='h-14 rounded-lg resize-none px-2 py-0 bg-base-100 text-base-content/50 focus:text-base-content focus:outline-none focus:border-2 focus:border-primary/80'
                 />
                 {errors.description && <p className="text-error text-xs mt-1">{errors.description.message}</p>}
@@ -102,25 +91,25 @@ export function TicketUpdateForm({
               </form>
             </div>
             <div className='overflow-auto max-h-[70vh] px-4 pb-16'>
-              <CommentColumn modalProps={modalProps} />
+              <CommentColumn modalProps={ticketModalProps} />
             </div>
             <div className='flex justify-between items-center px-4 border-t h-12 absolute bottom-0 left-0 bg-base-100 w-full'>
               <div className='flex flex-col text-xs text-base-content/50 text-left'>
-                <div>作成日時：{getDateTimeFullStyle(modalProps?.createdAt)}</div>
-                <div>更新日時：{getDateTimeFullStyle(modalProps?.updatedAt)}</div>
+                <div>作成日時：{getDateTimeFullStyle(ticketModalProps?.createdAt)}</div>
+                <div>更新日時：{getDateTimeFullStyle(ticketModalProps?.updatedAt)}</div>
               </div>
               <div className="dropdown dropdown-top dropdown-end">
-                <div tabIndex={0} role="button" className="text-base-content/50 hover:text-primary">
+                <button type="button" className="text-base-content/50 hover:text-primary">
                   <EllipsisHorizontalCircleIcon className='w-8 h-8' />
-                </div>
-                <ul tabIndex={0} className="dropdown-content menu bg-base-300 rounded-box z-[1] w-52 p-2 shadow">
-                  <li><TicketDeleteForm ticketId={modalProps?.id ?? ''} underDialog={dialog} /></li>
+                </button>
+                <ul className="dropdown-content menu bg-base-300 rounded-box z-[1] w-52 p-2 shadow">
+                  <li><TicketDeleteForm ticketId={ticketModalProps?.id ?? ''} /></li>
                 </ul>
               </div>
             </div>
           </>
         }
-      </CommonModal>
+      </FormModal>
     </>
   )
 }
