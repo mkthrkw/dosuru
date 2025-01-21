@@ -1,10 +1,10 @@
 "use server";
 
 import { executeWorkflow } from "@/app/_lib/dify/actions";
+import { retroPop, tuttiFrutti } from "@/app/_util/colors/colorPalette";
 import type { ActionState } from "@/app/_util/types/actionType";
-import { createList } from "../lists/actions";
-import { createProject } from "../projects/actions";
-import { createTicket } from "../tickets/actions";
+import { prisma } from "@/prisma/prisma";
+import { getSessionUserId } from "../user/actions";
 import type { AiFirstInputSchemaType, AiSecondInputSchemaType } from "./schema";
 
 /**
@@ -70,6 +70,9 @@ export async function createProjectByAi({
 	inputValues: AiSecondInputSchemaType;
 }) {
 	const prevState: ActionState = { state: "pending", message: "" };
+	const getColor = () => {
+		return tuttiFrutti.concat(retroPop)[Math.floor(Math.random() * 10)];
+	};
 	try {
 		const data = await executeWorkflow({
 			query: inputValues.second_input,
@@ -77,46 +80,60 @@ export async function createProjectByAi({
 		});
 		const response: ProjectResponse = await JSON.parse(data);
 
-		// プロジェクト作成
-		const createProjectResult = await createProject({
-			name: response.project.title,
-			description: response.project.description,
+		const userId = await getSessionUserId();
+
+		const project = await prisma.$transaction(async (tx) => {
+			// 既存プロジェクトレコードの表示順序最大値を取得
+			const maxOrder = await tx.project.aggregate({
+				_max: { order: true },
+				where: { userId: userId },
+			});
+			// レコードが存在しない場合は0を設定
+			const maxProjectOrder = maxOrder._max?.order || 0;
+
+			// カウントアップ、ダウン用
+			let displayId = 1;
+			let listOrder = response.project.lists.length;
+
+			// プロジェクトを作成
+			const project = await tx.project.create({
+				data: {
+					name: response.project.title,
+					description: response.project.description,
+					order: maxProjectOrder + 1,
+					userId: userId,
+					lists: {
+						create: response.project.lists.map((list) => {
+							let ticketOrder = list.tickets.length;
+							const listData = {
+								title: list.title,
+								order: listOrder,
+								color: getColor(),
+								tickets: {
+									create: list.tickets.map((ticket) => {
+										const ticketData = {
+											title: ticket.title,
+											order: ticketOrder,
+											displayId: displayId,
+										};
+										displayId++;
+										ticketOrder--;
+										return ticketData;
+									}),
+								},
+							};
+							listOrder--;
+							return listData;
+						}),
+					},
+				},
+			});
+			return project;
 		});
 
-		const projectId = createProjectResult.createdId;
-		if (!projectId) throw new Error("can't create project.");
-
-		// リスト作成
-		response.project.lists
-			.reverse()
-			.map(async (list: { title: string; tickets: { title: string }[] }) => {
-				const color = ["#93aec1", "#9dbdba", "#f8b042", "#ec6a52"][
-					Math.floor(Math.random() * 4)
-				];
-				const createListResult = await createList(
-					{
-						title: list.title,
-						color: color,
-					},
-					projectId,
-				);
-
-				const listId = createListResult.createdId;
-				if (!listId) throw new Error("can't create list.");
-
-				// チケット作成
-				list.tickets.reverse().map(async ({ title }) => {
-					await createTicket(
-						{
-							title: title,
-						},
-						listId,
-					);
-				});
-			});
-
 		prevState.state = "resolved";
-		prevState.message = projectId;
+		prevState.message = "Project created successfully.";
+		prevState.createdId = project.id;
 		return prevState;
 	} catch (error) {
 		prevState.state = "rejected";
