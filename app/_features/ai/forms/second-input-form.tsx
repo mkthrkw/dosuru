@@ -16,13 +16,14 @@ export function SecondInputForm() {
     mode: "onSubmit"
   })
 
-  const { inputValue } = useLlmFormStore();
+  const { inputValue, setValue } = useLlmFormStore();
   const router = useRouter();
 
   const onSubmit = async (data: AiSecondInputSchemaType) => {
     const result = await createProjectByAi({ inputValues: data });
     if (result.state === "resolved") {
-      router.push(`/dosuru/${result.message}`);
+      setValue("");
+      router.push(`/dosuru/${result.createdId}`);
     }
     if (result.state === "rejected") {
       toast.error(result.message);
